@@ -1,0 +1,51 @@
+<%- include('../partials/header', { title: 'Live Quiz' }) %>
+
+  <div id="quizTitleWrap" class="quiz-top">
+    <strong id="quizTitle">Loading quiz…</strong>
+    <div class="timer" id="quizTimer">
+      <span>⏱</span>
+      <span class="time" id="quizTimerTime">--:--</span>
+    </div>
+  </div>
+
+  <!-- Main quiz UI -->
+  <div id="quizMain">
+    <!-- Loading state — shown above the question, removed once data arrives -->
+    <div id="quizLoading" class="loading-wrap" style="min-height:30vh">
+      <div>
+        <div class="spinner"></div>
+        <p>Loading questions…</p>
+      </div>
+    </div>
+
+    <div class="section" style="padding-bottom:0">
+      <div class="q-nav" id="questionNav"></div>
+    </div>
+
+    <div class="card glass question-box" id="questionBox" style="display:none">
+      <div class="q-count" id="qIndex">Question 1</div>
+      <h2 id="qText"></h2>
+      <div class="q-meta-row mb-2" style="margin-left:0">
+        <span class="tag green" id="qMarks">+1 marks</span>
+      </div>
+      <div id="qOptions"></div>
+
+      <div class="quiz-actions">
+        <button class="btn btn-ghost" id="btnPrev">← Previous</button>
+        <span class="muted" id="qPager"></span>
+        <div class="flex">
+          <button class="btn btn-gradient" id="btnNext">Next →</button>
+          <button class="btn btn-hot" id="btnSubmit">Submit Quiz</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.MQUIZ = {
+      quizId: <%= quiz.id %>,
+      loggedIn: <%= user ? 'true' : 'false' %>
+    };
+  </script>
+
+<%- include('../partials/footer', { scripts: ['/js/quiz.js'] }) %>

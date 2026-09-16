@@ -1,0 +1,30 @@
+<%- include('../partials/header', { title: 'Quiz Results' }) %>
+
+  <div class="section" style="max-width:820px;margin:0 auto">
+    <div class="section-head">
+      <div>
+        <h2>Results · <%= quiz.title %></h2>
+        <p><span class="tag accent">#<%= quiz.quiz_code %></span> · <%= quiz.total_marks %> points</p>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost btn-sm" href="/admin/quiz/<%= quiz.id %>">Edit quiz</a>
+        <a class="btn btn-gradient btn-sm" id="liveAnchor" href="#">🏆 Live board</a>
+        <a class="btn btn-hot btn-sm" id="exportCsv" href="#">⬇ Export CSV</a>
+        <button class="btn btn-success btn-sm" id="announceWinners">📣 Announce winners</button>
+        <button class="btn btn-ghost btn-sm" id="toggleActive">—</button>
+      </div>
+    </div>
+
+    <div class="table-wrap glass">
+      <table>
+        <thead>
+          <tr><th>Rank</th><th>Participant</th><th>Email</th><th>Score</th><th>Time taken</th><th>Submitted</th><th style="text-align:right">Actions</th></tr>
+        </thead>
+        <tbody id="quizResults" data-quiz-id="<%= quiz.id %>">
+          <tr><td colspan="7" class="center muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<%- include('../partials/footer', { scripts: ['/js/admin.js'] }) %>

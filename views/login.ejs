@@ -1,0 +1,27 @@
+<%- include('partials/header', { title: 'Login' }) %>
+
+  <div class="auth-wrap">
+    <div class="card glass auth-card">
+      <h1>Welcome back 👋</h1>
+      <p class="sub">Login to continue your quiz journey.</p>
+
+      <div class="form-error" data-error></div>
+      <div class="form-success" data-success></div>
+
+      <form data-ajax method="POST" action="/api/auth/login" data-redirect="/">
+        <div class="field">
+          <label>Email</label>
+          <input class="input" type="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input class="input" type="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button class="btn btn-gradient btn-block" type="submit">Login</button>
+      </form>
+
+      <p class="auth-alt">New here? <a href="/signup">Create an account</a></p>
+    </div>
+  </div>
+
+<%- include('partials/footer') %>

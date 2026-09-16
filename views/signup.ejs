@@ -1,0 +1,31 @@
+<%- include('partials/header', { title: 'Sign Up' }) %>
+
+  <div class="auth-wrap">
+    <div class="card glass auth-card">
+      <h1>Create your account ✨</h1>
+      <p class="sub">Join as a participant, or ask an admin for organizer access.</p>
+
+      <div class="form-error" data-error></div>
+      <div class="form-success" data-success></div>
+
+      <form data-ajax method="POST" action="/api/auth/signup" data-redirect="/">
+        <div class="field">
+          <label>Full name</label>
+          <input class="input" type="text" name="name" placeholder="Ada Lovelace" required>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input class="input" type="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label>Password <span class="faint">(min 6 characters)</span></label>
+          <input class="input" type="password" name="password" placeholder="••••••••" minlength="6" required>
+        </div>
+        <button class="btn btn-gradient btn-block" type="submit">Create account</button>
+      </form>
+
+      <p class="auth-alt">Already registered? <a href="/login">Login</a></p>
+    </div>
+  </div>
+
+<%- include('partials/footer') %>

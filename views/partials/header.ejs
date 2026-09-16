@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'M-Quiz — Ultimate Quiz Competition' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+</head>
+<body>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- ============ Navbar ============ -->
+  <nav class="nav">
+    <a href="/" class="brand">
+      <span class="brand-mark">M</span>
+      <span>M-<em>Quiz</em></span>
+    </a>
+
+    <span class="menu-toggle" aria-label="Menu">☰</span>
+
+    <div class="nav-links">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/join">Join Quiz</a>
+      <% if (user && user.role === 'organizer') { %>
+        <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+        <a class="nav-link" href="/admin/users">Users</a>
+        <a class="nav-link" href="/admin/quizzes">Quizzes</a>
+        <a class="btn btn-gradient btn-sm" href="/admin/quiz/new">+ Create Quiz</a>
+      <% } else if (user && user.role === 'admin') { %>
+        <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+        <a class="nav-link" href="/admin/quizzes">Quizzes</a>
+        <a class="btn btn-gradient btn-sm" href="/admin/quiz/new">+ Create Quiz</a>
+      <% } else if (user) { %>
+        <a class="nav-link" href="/profile">Profile</a>
+      <% } %>
+
+      <% if (user) { %>
+        <div class="nav-user">
+          <a href="/profile" class="flex" style="gap:8px">
+            <span class="avatar"><%= user.name.charAt(0).toUpperCase() %></span>
+            <span class="muted"><%= user.name %></span>
+          </a>
+          <form method="POST" action="/api/auth/logout" class="flex" style="gap:0;margin:0" onsubmit="event.preventDefault(); fetch(this.action,{method:'POST'}).then(()=>location.href='/');">
+            <button class="btn btn-ghost btn-sm" type="submit">Logout</button>
+          </form>
+        </div>
+      <% } else { %>
+        <a class="btn btn-ghost btn-sm" href="/login">Login</a>
+        <a class="btn btn-gradient btn-sm" href="/signup">Sign Up</a>
+      <% } %>
+    </div>
+  </nav>

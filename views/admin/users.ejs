@@ -1,0 +1,79 @@
+<%- include('../partials/header', { title: 'Manage Users' }) %>
+
+  <div class="section" style="max-width:960px;margin:0 auto">
+    <div class="section-head">
+      <div>
+        <h2>Users 👥</h2>
+        <p>Edit participant &amp; admin accounts, or promote a participant to admin.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap glass">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Role</th><th>Attempts</th><th style="text-align:right">Actions</th></tr>
+        </thead>
+        <tbody id="adminUsersList">
+          <tr><td colspan="5" class="center muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Edit user modal -->
+  <div id="editUserModal" class="overlay" style="display:none">
+    <div class="glass card" style="max-width:420px;width:100%;padding:28px">
+      <div class="flex between">
+        <h3>Edit user</h3>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('editUserModal').style.display='none'">✕</button>
+      </div>
+      <div class="form-error" data-error style="margin:12px 0"></div>
+      <form id="editUserForm" style="display:grid;gap:14px">
+        <input type="hidden" name="id">
+        <div>
+          <label>Name</label>
+          <input class="input" name="name" required>
+        </div>
+        <div>
+          <label>Email</label>
+          <input class="input" name="email" type="email" required>
+        </div>
+        <div>
+          <label>Role</label>
+          <select class="input" name="role">
+            <option value="organizer">Admin Organizer (full access)</option>
+            <option value="admin">Admin (own quizzes)</option>
+            <option value="participant">Participant</option>
+          </select>
+        </div>
+        <div>
+          <label>New password <span class="faint">(leave blank to keep)</span></label>
+          <input class="input" name="password" type="password" minlength="6" autocomplete="new-password">
+        </div>
+        <button class="btn btn-gradient btn-block" type="submit">Save changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete user modal -->
+  <div id="deleteUserModal" class="overlay" style="display:none">
+    <div class="glass card" style="max-width:400px;width:100%;padding:28px">
+      <div class="flex between">
+        <h3>Delete user</h3>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('deleteUserModal').style.display='none'">✕</button>
+      </div>
+      <p class="mt-2" id="deleteUserText">Delete this account?</p>
+      <p class="faint" style="font-size:.85rem">This permanently removes the account, its attempts and leaderboard entries.</p>
+      <div class="form-error" data-del-error style="margin:12px 0"></div>
+      <div class="flex" style="justify-content:flex-end;gap:10px;margin-top:18px">
+        <button class="btn btn-ghost" onclick="document.getElementById('deleteUserModal').style.display='none'">Cancel</button>
+        <button class="btn btn-danger" id="confirmUserDelete">Delete user</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.MVIEW = { currentUserId: <%= user.id %> };
+  </script>
+
+<%- include('../partials/footer', { scripts: ['/js/admin.js'] }) %>

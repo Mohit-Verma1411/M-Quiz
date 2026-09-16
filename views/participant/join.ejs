@@ -1,0 +1,54 @@
+<%- include('../partials/header', { title: 'Join Quiz' }) %>
+
+  <div class="auth-wrap">
+    <div class="card glass auth-card">
+      <h1>Join a quiz ⚡</h1>
+      <p class="sub">Enter the 6-character quiz code your host shared.</p>
+
+      <div class="form-error" data-error></div>
+
+      <form id="joinForm" style="display:flex;gap:10px">
+        <input id="codeInput" class="input" style="text-align:center;font-weight:800;letter-spacing:.35em;text-transform:uppercase" placeholder="ABC123" maxlength="8" autocomplete="off" required>
+        <button class="btn btn-hot" type="submit">Go</button>
+      </form>
+
+      <div id="joinPreview" style="margin-top:18px"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('joinForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('codeInput').value.trim();
+      const errEl = document.querySelector('[data-error]');
+      errEl.classList.remove('show');
+      const preview = document.getElementById('joinPreview');
+      preview.innerHTML = '<div class="center"><div class="spinner" style="margin-top:10px"></div></div>';
+      try {
+        const data = await api('/api/quizzes/code/' + encodeURIComponent(code));
+        const q = data.quiz;
+        preview.innerHTML = `
+          <div class="glass" style="padding:20px">
+            <div class="flex between">
+              <span class="tag accent">#${escapeHtml(q.quiz_code)}</span>
+              <span class="pill on">Open</span>
+            </div>
+            <h3 class="mt-2">${escapeHtml(q.title)}</h3>
+            <p class="muted">${escapeHtml(q.description || '')}</p>
+            <div class="mini-tags">
+              <span class="tag">${escapeHtml(q.subject || 'General')}</span>
+              <span class="tag">⏱ ${q.duration_minutes} min</span>
+              <span class="tag green">🏆 ${q.total_marks} pts</span>
+              ${q.negative_marking ? '<span class="tag red">−' + q.negative_marking + ' wrong</span>' : ''}
+            </div>
+            <a class="btn btn-gradient btn-block mt-3" href="/live/${q.id}">Proceed to quiz</a>
+          </div>`;
+      } catch (err) {
+        preview.innerHTML = '';
+        errEl.textContent = err.message;
+        errEl.classList.add('show');
+      }
+    });
+  </script>
+
+<%- include('../partials/footer') %>

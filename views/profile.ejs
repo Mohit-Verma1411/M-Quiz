@@ -1,0 +1,53 @@
+<%- include('partials/header', { title: 'My Profile' }) %>
+
+  <div class="section" style="max-width:760px;margin:0 auto">
+    <div class="card glass">
+      <div class="flex" style="align-items:center;gap:18px">
+        <div class="avatar" style="width:64px;height:64px;font-size:1.5rem;border-radius:18px"><%= me.name.charAt(0).toUpperCase() %></div>
+        <div style="flex:1">
+          <h1 style="font-size:1.5rem"><%= me.name %></h1>
+          <p class="muted"><%= me.email %></p>
+        </div>
+        <div style="text-align:right">
+          <% const roleLabel = me.role === 'organizer' ? 'Admin Organizer' : (me.role === 'admin' ? 'Admin' : 'Participant'); %>
+          <span class="pill <%= me.role === 'participant' ? '' : 'on' %>"><%= roleLabel %></span>
+          <p class="faint mt-1" style="font-size:.8rem">Joined <%= me.created_at.slice(0,10) %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head mt-3">
+      <h2>My attempts</h2>
+      <p>Your recent quiz history.</p>
+    </div>
+
+    <% if (attempts.length) { %>
+      <div class="table-wrap glass">
+        <table>
+          <thead>
+            <tr><th>Quiz</th><th>Code</th><th>Score</th><th>Time</th><th>When</th></tr>
+          </thead>
+          <tbody>
+            <% attempts.forEach(a => { %>
+              <tr>
+                <td><b><%= a.title %></b></td>
+                <td><span class="tag accent">#<%= a.quiz_code %></span></td>
+                <td><b style="color:var(--success)"><%= a.score %></b></td>
+                <td><%= Math.floor(a.time_taken_seconds/60) %>m <%= a.time_taken_seconds%60 %>s</td>
+                <td class="faint" style="font-size:.85rem"><%= a.submitted_at.slice(0,16).replace('T',' ') %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="card glass empty">
+        <div class="big">🎯</div>
+        <h3>No attempts yet</h3>
+        <p>Join a quiz with a code to see your scores here.</p>
+        <a class="btn btn-gradient mt-2" href="/join">Join a quiz</a>
+      </div>
+    <% } %>
+  </div>
+
+<%- include('partials/footer') %>

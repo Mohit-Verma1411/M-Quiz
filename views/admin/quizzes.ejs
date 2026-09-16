@@ -1,0 +1,24 @@
+<%- include('../partials/header', { title: 'All Quizzes' }) %>
+
+  <div class="section">
+    <div class="section-head">
+      <div>
+        <h2>All quizzes 🎯</h2>
+        <p>Manage, monitor and publish your competitions.</p>
+      </div>
+      <a class="btn btn-gradient btn-sm" href="/admin/quiz/new">+ Create Quiz</a>
+    </div>
+
+    <div class="table-wrap glass">
+      <table>
+        <thead>
+          <tr><th>Quiz</th><th>Code</th><th>Questions</th><th>Participants</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="adminQuizzesList">
+          <tr><td colspan="6" class="center muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<%- include('../partials/footer', { scripts: ['/js/admin.js'] }) %>

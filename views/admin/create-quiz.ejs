@@ -1,0 +1,87 @@
+<%- include('../partials/header', { title: 'Create Quiz' }) %>
+
+  <div class="section" style="max-width:720px;margin:0 auto">
+    <div class="section-head">
+      <div>
+        <h2>Create a new quiz ✨</h2>
+        <p>Set the details, then add questions in the next step.</p>
+      </div>
+    </div>
+
+    <div class="form-error" data-error></div>
+    <div class="form-success" data-success></div>
+
+    <form id="createQuizForm" data-ajax method="POST" action="/api/quizzes" data-redirect="/admin/quiz/%id%" class="card glass" style="padding:28px">
+      <div class="field">
+        <label>Quiz title *</label>
+        <input class="input" name="title" placeholder="e.g. Tech Fest 2026 — Web Dev Challenge" required>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea class="input" name="description" placeholder="What is this quiz about? Rules, theme, fun facts…"></textarea>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="field">
+          <label>Subject</label>
+          <select class="input" name="subject">
+            <option>General Knowledge</option>
+            <option>Computer Science</option>
+            <option>Coding</option>
+            <option>Mathematics</option>
+            <option>Science</option>
+            <option>History</option>
+            <option>Sports</option>
+            <option>Entertainment</option>
+            <option>Tech Fest</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Duration (minutes) *</label>
+          <input class="input" type="number" name="duration_minutes" min="1" max="300" value="10" required>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="field">
+          <label>Quiz code <span class="faint">(optional, 4-8 chars)</span></label>
+          <input class="input" name="quiz_code" placeholder="Auto-generate if empty" maxlength="8">
+        </div>
+        <div class="field">
+          <label>Negative marking per wrong <span class="faint">(0 = none)</span></label>
+          <input class="input" type="number" name="negative_marking" min="0" value="0">
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="field">
+          <label>Scheduled start (optional)</label>
+          <input class="input" type="datetime-local" name="start_time">
+        </div>
+        <div class="field">
+          <label>Scheduled end (optional)</label>
+          <input class="input" type="datetime-local" name="end_time">
+        </div>
+      </div>
+      <button class="btn btn-gradient btn-block" type="submit">Create quiz →</button>
+    </form>
+  </div>
+
+  <script>
+    // Redirect to the new quiz's question-manager page after creation.
+    document.getElementById('createQuizForm').addEventListener('submit', function (e) {
+      const payload = Object.fromEntries(new FormData(this).entries());
+      const orig = this.action;
+      // The data-ajax helper posts JSON; capture the response id via fetch.
+      e.preventDefault();
+      const btn = this.querySelector('button');
+      btn.disabled = true;
+      fetch(orig, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        .then(r => r.json())
+        .then(data => {
+          if (data.id) { toast(data.message, 'success'); setTimeout(() => window.location.href = '/admin/quiz/' + data.id, 600); }
+          else { toast(data.error || 'Failed', 'error'); btn.disabled = false; }
+        })
+        .catch(() => { toast('Network error.', 'error'); btn.disabled = false; });
+    });
+  </script>
+
+<%- include('../partials/footer') %>

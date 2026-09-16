@@ -1,0 +1,15 @@
+<footer>
+    <p>M-Quiz · Ultimate Quiz Competition Platform — built with Node.js, Express, SQLite &amp; Socket.io</p>
+    <p style="margin-top:4px">Made for college events, coding competitions, GK quizzes &amp; tech fests 🎯</p>
+  </footer>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/main.js"></script>
+
+  <!-- Socket.io fallback is automatic: when the CDN/handshake fails,
+       every real-time page polls the leaderboard API every 5s. -->
+  <% if (typeof scripts !== 'undefined') scripts.forEach(s => { %>
+    <script src="<%= s %>"></script>
+  <% }); %>
+</body>
+</html>

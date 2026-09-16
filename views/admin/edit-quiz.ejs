@@ -1,0 +1,117 @@
+<%- include('../partials/header', { title: 'Edit Quiz' }) %>
+
+  <div class="section" style="max-width:820px;margin:0 auto">
+    <div class="section-head">
+      <div>
+        <h2>Manage quiz · <%= quiz.title %></h2>
+        <p><span class="tag accent">#<%= quiz.quiz_code %></span> <span class="pill <%= quiz.is_active ? 'on' : 'off' %>"><%= quiz.is_active ? 'Published' : 'Unpublished' %></span> · <%= quiz.total_marks %> points</p>
+      </div>
+      <div class="flex">
+        <a class="btn btn-gradient btn-sm" href="/admin/quiz/<%= quiz.id %>/leaderboard">Live board</a>
+        <a class="btn btn-ghost btn-sm" href="/admin/quiz/<%= quiz.id %>/results">Results</a>
+      </div>
+    </div>
+
+    <!-- Quiz settings (editable) -->
+    <form id="quizForm" class="card glass" style="padding:24px">
+      <h3 style="margin-bottom:16px">Quiz details</h3>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="field">
+          <label>Title</label>
+          <input class="input" name="title" value="<%= quiz.title %>">
+        </div>
+        <div class="field">
+          <label>Subject</label>
+          <input class="input" name="subject" value="<%= quiz.subject || '' %>">
+        </div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea class="input" name="description"><%= quiz.description || '' %></textarea>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="field">
+          <label>Duration (min)</label>
+          <input class="input" type="number" name="duration_minutes" min="1" max="300" value="<%= quiz.duration_minutes %>">
+        </div>
+        <div class="field">
+          <label>Negative marking</label>
+          <input class="input" type="number" name="negative_marking" min="0" value="<%= quiz.negative_marking %>">
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select class="input" name="is_active">
+            <option value="1" <%= quiz.is_active ? 'selected' : '' %>>Published</option>
+            <option value="0" <%= !quiz.is_active ? 'selected' : '' %>>Unpublished</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex">
+        <button class="btn btn-gradient btn-sm" type="submit">Save details</button>
+        <button class="btn btn-danger btn-sm" type="button" id="deleteQuiz">Delete quiz</button>
+      </div>
+    </form>
+
+    <!-- Questions editor -->
+    <div class="section-head mt-3">
+      <h2>Questions <span class="faint" style="font-weight:400">(<%= questions.length %>)</span></h2>
+      <div class="flex">
+        <button class="btn btn-ghost btn-sm" id="addQuestion">+ Add question</button>
+        <button class="btn btn-hot btn-sm" id="saveQuestions">Save all</button>
+      </div>
+    </div>
+
+    <div id="questionEditor" data-quiz-id="<%= quiz.id %>">
+      <% questions.forEach((q, i) => { %>
+        <div class="q-edit-row" data-row="<%= i %>" data-id="<%= q.id %>">
+          <div class="q-head between">
+            <b>Q<%= i + 1 %></b>
+            <div class="flex" style="gap:6px">
+              <button class="btn btn-danger btn-sm" data-del>Remove</button>
+            </div>
+          </div>
+          <textarea class="input" data-field="question_text" placeholder="Type the question…"><%= q.question_text %></textarea>
+          <div class="q-meta-row">
+            <select data-field="correct_option">
+              <% ['A','B','C','D'].forEach(l => { %>
+                <option value="<%= l %>" <%= l === q.correct_option ? 'selected' : '' %>>Correct: <%= l %></option>
+              <% }); %>
+            </select>
+            <input class="input" type="number" min="1" value="<%= q.marks %>" style="width:110px" data-field="marks">
+            <span class="faint" style="font-size:.82rem">marks</span>
+          </div>
+          <div class="q-opt-grid mt-2">
+            <input class="input" data-field="option_a" placeholder="Option A…" value="<%= q.option_a %>">
+            <input class="input" data-field="option_b" placeholder="Option B…" value="<%= q.option_b %>">
+            <input class="input" data-field="option_c" placeholder="Option C…" value="<%= q.option_c %>">
+            <input class="input" data-field="option_d" placeholder="Option D…" value="<%= q.option_d %>">
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+
+  <script>
+    // Save quiz details via PUT.
+    document.getElementById('quizForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = Object.fromEntries(new FormData(e.target).entries());
+      payload.is_active = payload.is_active === '1' ? 1 : 0;
+      try {
+        const data = await api('/api/quizzes/<%= quiz.id %>', { method: 'PUT', body: JSON.stringify(payload) });
+        toast(data.message, 'success');
+      } catch (err) { toast(err.message, 'error'); }
+    });
+
+    // Delete quiz with confirmation.
+    document.getElementById('deleteQuiz').addEventListener('click', async () => {
+      if (!confirm('Delete this quiz permanently? This cannot be undone.')) return;
+      try {
+        const data = await api('/api/quizzes/<%= quiz.id %>', { method: 'DELETE' });
+        toast(data.message, 'success');
+        setTimeout(() => window.location.href = '/admin/dashboard', 700);
+      } catch (err) { toast(err.message, 'error'); }
+    });
+  </script>
+
+<%- include('../partials/footer', { scripts: ['/js/question-manager.js'] }) %>

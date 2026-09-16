@@ -1,0 +1,12 @@
+<%- include('partials/header', { title: 'Error' }) %>
+
+  <div class="err-wrap">
+    <div>
+      <div class="err-code"><%= code %></div>
+      <h1><%= message %></h1>
+      <p>The page you're looking for might be elsewhere or out of reach.</p>
+      <a class="btn btn-gradient" href="/">Back to home</a>
+    </div>
+  </div>
+
+<%- include('partials/footer') %>

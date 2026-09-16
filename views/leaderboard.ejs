@@ -1,0 +1,20 @@
+<%- include('partials/header', { title: 'Leaderboard' }) %>
+
+  <div class="section">
+    <div class="lb-wrap">
+      <div class="card glass lb-header">
+        <div>
+          <h1 style="font-size:1.8rem">🏆 <%= quiz.title %></h1>
+          <p class="muted"><span class="tag accent">#<%= quiz.quiz_code %></span> · <%= quiz.subject || 'General' %></p>
+        </div>
+        <div id="lbLive" class="muted" style="font-size:.82rem">Connecting…</div>
+      </div>
+
+      <div id="leaderboardRoot" data-quiz-id="<%= quiz.id %>" class="mb-3">
+        <div class="loading-wrap"><div><div class="spinner"></div><p>Loading leaderboard…</p></div></div>
+      </div>
+      <div id="lbList"></div>
+    </div>
+  </div>
+
+<%- include('partials/footer', { scripts: ['/js/leaderboard.js'] }) %>

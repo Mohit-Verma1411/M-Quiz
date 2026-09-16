@@ -1,0 +1,79 @@
+<%- include('../partials/header', { title: 'Result' }) %>
+
+  <div class="section" style="max-width:720px;margin:0 auto">
+    <% if (typeof alive !== 'undefined' && alive) { %>
+      <div class="card glass instructions center">
+        <div class="big" style="font-size:3rem">🎯</div>
+        <h1 class="mt-2">You already attempted this quiz</h1>
+        <p class="muted mt-1 mb-3">You can review your result below.</p>
+        <div class="flex center" style="justify-content:center">
+          <a class="btn btn-hot" href="/result/<%= existingAttempt %>">View my result</a>
+          <a class="btn btn-gradient" href="/">Home</a>
+        </div>
+      </div>
+    <% } else { %>
+
+      <div class="card glass center instructions">
+        <% if (attempt.disqualified) { %>
+          <div class="form-error show" style="margin-bottom:16px;justify-content:center">
+            ⛔ This attempt has been <b>disqualified</b> by the host. Your score is not shown on the leaderboard.
+          </div>
+        <% } %>
+        <h1>🎉 All done, <%= attempt.participant %>!</h1>
+        <p class="muted mb-2"><%= attempt.quizTitle %></p>
+
+        <% var qtotal = answers.reduce((s, a) => s + (a.marks || 0), 0); %>
+        <% var pct = qtotal ? Math.max(0, Math.min(100, Math.round((attempt.score / qtotal) * 100))) : 0; %>
+        <div class="score-ring" style="--pct:<%= pct %>">
+          <div class="inner">
+            <b><%= attempt.score %></b>
+            <span>points</span>
+          </div>
+        </div>
+
+        <div class="stats glass" style="margin:0 auto 8px">
+          <div class="stat"><b><%= Math.floor(attempt.time_taken_seconds/60) %>m <%= String(attempt.time_taken_seconds%60).padStart(2,'0') %>s</b><span>time taken</span></div>
+          <div class="stat"><b><%= pct %>%</b><span>accuracy</span></div>
+          <div class="stat"><b><%= answers.length %></b><span>questions</span></div>
+        </div>
+
+        <div class="flex center" style="justify-content:center">
+          <a class="btn btn-gradient" href="/leaderboard/<%= attempt.quiz_id %>">Live Leaderboard 🏆</a>
+          <a class="btn btn-ghost" href="/">Home</a>
+        </div>
+      </div>
+
+      <!-- Question review -->
+      <div class="section-head mt-3">
+        <h2>Answer review</h2>
+        <p>See what you got right and wrong.</p>
+      </div>
+      <% answers.forEach((a, i) => { %>
+        <div class="card glass mb-2" style="padding:20px">
+          <div class="flex between">
+            <b>Q<%= i + 1 %>. <%= a.question_text %></b>
+            <span class="pill <%= a.is_correct ? 'on' : 'off' %>">
+              <%= a.is_correct ? '+' + a.marks_obtained + ' ✓' : a.selected_option ? (a.marks_obtained < 0 ? a.marks_obtained + ' ✗' : '0 ✗') : 'Skipped' %>
+            </span>
+          </div>
+          <div class="mini-tags mt-2">
+            <% ['A','B','C','D'].forEach(l => { var opts = { A: 'option_a', B: 'option_b', C: 'option_c', D: 'option_d' }; %>
+              <span class="tag <%= l === a.correct_option ? 'green' : (a.selected_option && l === a.selected_option) ? 'red' : '' %>">
+                <%= l %>: <%= a[opts[l]] %><%= l === a.correct_option ? ' ✓' : '' %>
+              </span>
+            <% }); %>
+          </div>
+          <% if (a.selected_option && a.selected_option !== a.correct_option) { %>
+            <p class="muted mt-1" style="font-size:.85rem">Your answer was <%= a.selected_option %>. The correct option is <%= a.correct_option %>.</p>
+          <% } %>
+        </div>
+      <% }); %>
+
+    <% } %>
+  </div>
+
+  <script>
+    window.MQUIZ = { quizId: <%= typeof attempt !== 'undefined' ? attempt.quiz_id : 'null' %>, mode: 'result' };
+  </script>
+
+<%- include('../partials/footer') %>

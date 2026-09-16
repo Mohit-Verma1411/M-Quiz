@@ -1,0 +1,47 @@
+<%- include('../partials/header', { title: 'Admin Dashboard' }) %>
+
+  <div class="section" id="adminDashboard" data-organizer="<%= user.role === 'organizer' %>">
+    <div class="section-head">
+      <div>
+        <h2><%= user.role === 'organizer' ? 'Admin Organizer Dashboard' : 'Admin Dashboard' %> 📊</h2>
+        <p><%= user.role === 'organizer' ? 'Website-wide overview — every quiz and account.' : 'Overview of the quizzes you manage.' %></p>
+      </div>
+      <a class="btn btn-gradient" href="/admin/quiz/new">+ Create Quiz</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid mb-3" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+      <div class="card glass stat-card"><div class="ico" style="background:rgba(124,92,255,.15)">🎯</div><b id="statQuizzes">—</b><span>Total quizzes</span></div>
+      <% if (user.role === 'organizer') { %>
+      <div class="card glass stat-card"><div class="ico" style="background:rgba(45,212,167,.15)">👥</div><b id="statUsers">—</b><span>Total users</span></div>
+      <% } %>
+      <div class="card glass stat-card"><div class="ico" style="background:rgba(255,176,32,.15)">🟢</div><b id="statActive">—</b><span>Active quizzes</span></div>
+      <div class="card glass stat-card"><div class="ico" style="background:rgba(150,150,160,.15)">💤</div><b id="statInactive">—</b><span>Inactive quizzes</span></div>
+      <div class="card glass stat-card"><div class="ico" style="background:rgba(255,94,138,.15)">📝</div><b id="statAttempts">—</b><span>Submissions</span></div>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Recent quizzes -->
+      <div>
+        <div class="section-head"><h2>Recent quizzes</h2><a class="btn btn-ghost btn-sm" href="/admin/quizzes">View all</a></div>
+        <div id="recentQuizzes" class="grid" style="gap:14px">
+          <div class="loading-wrap"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Top attempts -->
+      <div>
+        <div class="section-head"><h2>Top performances</h2></div>
+        <div class="table-wrap glass">
+          <table>
+            <thead><tr><th>#</th><th>Player</th><th>Quiz</th><th>Time</th><th>Score</th></tr></thead>
+            <tbody id="topAttempts">
+              <tr><td colspan="5" class="center muted">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<%- include('../partials/footer', { scripts: ['/js/admin.js'] }) %>

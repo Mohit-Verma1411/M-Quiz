@@ -1,0 +1,109 @@
+<%- include('partials/header', { title: 'M-Quiz — Ultimate Quiz Competition' }) %>
+
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <span class="chip"><span class="dot"></span> Live · Real-time · Competitive</span>
+    <h1>
+      The <span class="grad-text">Ultimate</span> Quiz<br>
+      Competition <span class="grad-text-hot">Arena</span>
+    </h1>
+    <p class="sub">
+      Host and join lightning-fast quiz competitions with a real-time leaderboard.
+      Perfect for college events, coding battles, GK quizzes and tech fests.
+    </p>
+    <div class="hero-actions">
+      <% if (user && (user.role === 'admin' || user.role === 'organizer')) { %>
+        <a class="btn btn-gradient" href="/admin/quiz/new">✨ Create Quiz</a>
+        <a class="btn btn-hot" href="/join">⚡ Join Quiz</a>
+      <% } else if (user) { %>
+        <a class="btn btn-gradient" href="/join">⚡ Join Quiz</a>
+      <% } else { %>
+        <a class="btn btn-gradient" href="/signup">Create account</a>
+        <a class="btn btn-hot" href="/join">⚡ Join Quiz</a>
+      <% } %>
+      <a class="btn btn-ghost" href="#leaderboards">🏆 View Leaderboard</a>
+    </div>
+
+    <div class="stats glass">
+      <div class="stat"><b>100+</b><span>Event ready</span></div>
+      <div class="stat"><b>Real-time</b><span>Socket.io boards</span></div>
+      <div class="stat"><b>1-click</b><span>Quiz codes</span></div>
+      <div class="stat"><b>Fair</b><span>Score + time ranking</span></div>
+    </div>
+  </section>
+
+  <!-- ============ Open quizzes ============ -->
+  <section class="section" id="leaderboards">
+    <div class="section-head">
+      <div>
+        <h2>🔥 Trending Open Quizzes</h2>
+        <p>Grab a code, jump in, and climb the live ladder.</p>
+      </div>
+      <div class="flex">
+        <a class="btn btn-gradient btn-sm" href="/join">Join with code</a>
+      </div>
+    </div>
+
+    <% if (publicQuizzes.length) { %>
+      <div class="grid grid-3">
+        <% publicQuizzes.forEach(q => { %>
+          <div class="card glass">
+            <div class="flex between">
+              <span class="pill on">Open</span>
+              <span class="tag accent">#<%= q.quiz_code %></span>
+            </div>
+            <h3 class="mt-2"><%= q.title %></h3>
+            <p class="muted"><%= q.description || q.subject || 'Take the challenge!' %></p>
+            <div class="mini-tags">
+              <span class="tag"><%= q.subject || 'General' %></span>
+              <span class="tag">⏱ <%= q.duration_minutes %> min</span>
+              <span class="tag green">🏆 <%= q.total_marks %> pts</span>
+            </div>
+            <div class="card-foot">
+              <a class="btn btn-gradient btn-sm" href="/live/<%= q.id %>">Start Quiz</a>
+              <a class="btn btn-ghost btn-sm" href="/leaderboard/<%= q.id %>">Live Board</a>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty glass">
+        <div class="big">⏳</div>
+        <h3>No open quizzes right now</h3>
+        <p>Be the first to create one and invite your friends!</p>
+      </div>
+    <% } %>
+  </section>
+
+  <!-- ============ How it works ============ -->
+  <section class="section">
+    <div class="section-head center">
+      <h2>How it works</h2>
+      <p>Three simple steps from idea to jaw-dropping finale.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card glass">
+        <div class="stat-card">
+          <div class="ico" style="background:rgba(124,92,255,.15)">🧠</div>
+          <h3>1. Create a quiz</h3>
+          <p class="muted">Set the title, subject, duration, negative marking and add questions with marks in minutes.</p>
+        </div>
+      </div>
+      <div class="card glass">
+        <div class="stat-card">
+          <div class="ico" style="background:rgba(255,94,138,.15)">🔗</div>
+          <h3>2. Share a code</h3>
+          <p class="muted">Participants join instantly with a unique quiz code — no app install, no registration needed for guests.</p>
+        </div>
+      </div>
+      <div class="card glass">
+        <div class="stat-card">
+          <div class="ico" style="background:rgba(45,212,167,.15)">🚀</div>
+          <h3>3. Watch it live</h3>
+          <p class="muted">Scores stream to a real-time leaderboard ranked by points, then time. Announce winners in style.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<%- include('partials/footer') %>
