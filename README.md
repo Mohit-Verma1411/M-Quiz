@@ -87,6 +87,25 @@ Then open **http://localhost:3000**
 
 ---
 
+## 🚀 Deploy on Render (one click)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Mohit-Verma1411/M-Quiz)
+
+Clicking the button above takes you to Render (free, no credit card required) and
+deploys the `render.yaml` blueprint automatically:
+
+- **Runtime:** Node 20 · **Free plan** · auto-deploy on pushes to `master`
+- **AUTO_SEED=true** — a fresh/empty database is seeded with demo data on boot
+- **JWT_SECRET** auto-generated per deploy
+- **Health check** at `/health`
+
+> ⚠️ Render's free tier has **ephemeral storage**: the SQLite file (`quiz.db`)
+> resets on redeploys. `AUTO_SEED` restores the demo data, so the app is always
+> usable — but for durable data, add Render's **Persistent Disk** (paid) and set
+> `DB_PATH` to it, or switch to a managed DB.
+
+---
+
 ## 🔑 Demo Accounts (after `npm run seed`)
 
 | Role | Email | Password |
