@@ -7,16 +7,28 @@
 require('dotenv').config();
 const http = require('http');
 const path = require('path');
+const { execSync } = require('child_process');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const { Server } = require('socket.io');
 
-const { initDatabase } = require('./config/database');
+const { initDatabase, db } = require('./config/database');
 const { setIo, getIo } = require('./services/realtime');
 const { attachUser } = require('./middleware/auth');
 
 // Ensure DB + tables exist before anything else.
 initDatabase();
+
+// Seed demo data on a fresh/empty database (used by hosts like Render whose
+// free-tier disk is ephemeral and recycled on restart). Set AUTO_SEED=true to
+// enable; non-empty databases are never touched.
+if (process.env.AUTO_SEED === 'true') {
+  const empty = db.prepare('SELECT COUNT(*) AS c FROM users').get().c === 0;
+  if (empty) {
+    console.log('[boot] empty database detected — seeding demo data…');
+    execSync('node seed.js', { stdio: 'inherit' });
+  }
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +50,11 @@ app.use('/api/quizzes', require('./routes/quizzes'));
 app.use('/api/attempts', require('./routes/attempts'));
 app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/admin', require('./routes/admin'));
+
+// ---------- Health check (for Render / uptime monitors) ----------
+app.get('/health', (req, res) => {
+  res.json({ ok: true, uptime: process.uptime() });
+});
 
 // ---------- Page routes ----------
 app.use('/', require('./routes/pages'));
