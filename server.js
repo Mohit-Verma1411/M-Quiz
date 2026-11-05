@@ -145,4 +145,10 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, server, io };
+// Vercel's Express builder treats this file as the serverless handler and
+// requires the default export to be a function. Expose the Express app
+// directly while keeping the other handles available as properties.
+module.exports = app;
+module.exports.app = app;
+module.exports.server = server;
+module.exports.io = io;
