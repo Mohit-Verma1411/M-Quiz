@@ -276,6 +276,34 @@ router.put('/attempts/:attemptId/disqualify', requireAdmin, (req, res) => {
   });
 });
 
+// DELETE /api/admin/attempts/:attemptId
+// Permanently deletes a participant's attempt record (answers, score and
+// leaderboard entry). This frees BOTH the per-user AND the per-device
+// uniqueness constraints, so the participant can be given another chance
+// even from the same device / same account.
+router.delete('/attempts/:attemptId', requireAdmin, (req, res) => {
+  const attempt = db.prepare('SELECT * FROM attempts WHERE id = ?').get(req.params.attemptId);
+  if (!attempt) return res.status(404).json({ error: 'Attempt not found.' });
+  const quiz = db.prepare('SELECT * FROM quizzes WHERE id = ?').get(attempt.quiz_id);
+  if (!canManageQuiz(req.user, quiz.created_by)) {
+    return res.status(403).json({ error: 'Admins can only manage quizzes they created.' });
+  }
+
+  const del = db.transaction(() => {
+    // answers cascade via attempts ON DELETE CASCADE.
+    db.prepare('DELETE FROM attempts WHERE id = ?').run(attempt.id);
+    db.prepare('DELETE FROM leaderboard WHERE quiz_id = ? AND user_id = ?').run(attempt.quiz_id, attempt.user_id);
+  });
+  del();
+
+  refreshLeaderboard(attempt.quiz_id);
+  try { broadcastLeaderboard(attempt.quiz_id); } catch (e) {}
+
+  return res.json({
+    message: 'Attempt record removed — this participant (and device) can now retake the quiz.',
+  });
+});
+
 // ============================================================
 // Stop quiz — auto-submits in-progress attempts (via broadcast)
 // ============================================================

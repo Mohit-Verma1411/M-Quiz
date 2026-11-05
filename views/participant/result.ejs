@@ -37,6 +37,16 @@
           <div class="stat"><b><%= answers.length %></b><span>questions</span></div>
         </div>
 
+        <% if (attempt.disqualified) { %>
+          <div class="mt-2"><span class="pill off">⛔ Not ranked — disqualified by host</span></div>
+        <% } else if (rank) { %>
+          <div class="mt-2">
+            <span class="pill on" style="font-size:1rem">🏅 Your rank: #<%= rank %> of <%= totalParticipants %> participants</span>
+          </div>
+        <% } else { %>
+          <div class="mt-2"><span class="tag warn">Rank appears once results are final</span></div>
+        <% } %>
+
         <div class="flex center" style="justify-content:center">
           <a class="btn btn-gradient" href="/leaderboard/<%= attempt.quiz_id %>">Live Leaderboard 🏆</a>
           <a class="btn btn-ghost" href="/">Home</a>
@@ -46,24 +56,32 @@
       <!-- Question review -->
       <div class="section-head mt-3">
         <h2>Answer review</h2>
-        <p>See what you got right and wrong.</p>
+        <% if (revealAnswers) { %>
+          <p>See what you got right and wrong.</p>
+        <% } else { %>
+          <p class="muted">Correct answers are hidden until the quiz closes. Your submitted options are shown below.</p>
+        <% } %>
       </div>
       <% answers.forEach((a, i) => { %>
         <div class="card glass mb-2" style="padding:20px">
           <div class="flex between">
             <b>Q<%= i + 1 %>. <%= a.question_text %></b>
-            <span class="pill <%= a.is_correct ? 'on' : 'off' %>">
-              <%= a.is_correct ? '+' + a.marks_obtained + ' ✓' : a.selected_option ? (a.marks_obtained < 0 ? a.marks_obtained + ' ✗' : '0 ✗') : 'Skipped' %>
-            </span>
+            <% if (revealAnswers) { %>
+              <span class="pill <%= a.is_correct ? 'on' : 'off' %>">
+                <%= a.is_correct ? '+' + a.marks_obtained + ' ✓' : a.selected_option ? (a.marks_obtained < 0 ? a.marks_obtained + ' ✗' : '0 ✗') : 'Skipped' %>
+              </span>
+            <% } else { %>
+              <span class="tag <%= a.selected_option ? 'warn' : '' %>">Your answer: <%= a.selected_option || '—' %></span>
+            <% } %>
           </div>
           <div class="mini-tags mt-2">
             <% ['A','B','C','D'].forEach(l => { var opts = { A: 'option_a', B: 'option_b', C: 'option_c', D: 'option_d' }; %>
-              <span class="tag <%= l === a.correct_option ? 'green' : (a.selected_option && l === a.selected_option) ? 'red' : '' %>">
-                <%= l %>: <%= a[opts[l]] %><%= l === a.correct_option ? ' ✓' : '' %>
+              <span class="tag <%= revealAnswers && l === a.correct_option ? 'green' : (revealAnswers && a.selected_option && l === a.selected_option) ? 'red' : '' %>">
+                <%= l %>: <%= a[opts[l]] %><%= revealAnswers && l === a.correct_option ? ' ✓' : '' %>
               </span>
             <% }); %>
           </div>
-          <% if (a.selected_option && a.selected_option !== a.correct_option) { %>
+          <% if (revealAnswers && a.selected_option && a.selected_option !== a.correct_option) { %>
             <p class="muted mt-1" style="font-size:.85rem">Your answer was <%= a.selected_option %>. The correct option is <%= a.correct_option %>.</p>
           <% } %>
         </div>

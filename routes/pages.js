@@ -5,6 +5,7 @@
 const express = require('express');
 const { db } = require('../config/database');
 const { attachUser, requireAuth, requireAdmin, requireOrganizer, isStaff, canManageQuiz } = require('../middleware/auth');
+const { canRevealAnswers } = require('../services/answer-privacy');
 
 const router = express.Router();
 
@@ -46,6 +47,11 @@ router.get('/', (req, res) => {
   page(res, 'home', { publicQuizzes });
 });
 
+// GET /about
+router.get('/about', (req, res) => {
+  page(res, 'about', { title: 'About — M-Quiz' });
+});
+
 // GET /login
 router.get('/login', (req, res) => {
   if (req.user) return res.redirect('/');
@@ -63,8 +69,8 @@ router.get('/join', (req, res) => {
   page(res, 'participant/join');
 });
 
-// GET /live/:quizId  — participant live quiz (open to guests)
-router.get('/live/:quizId', (req, res) => {
+// GET /live/:quizId — participant live quiz (login required; no guests)
+router.get('/live/:quizId', requireAuth, (req, res) => {
   const quiz = db.prepare(`
     SELECT id, title, description, subject, quiz_code, duration_minutes,
            total_marks, negative_marking, is_active
@@ -100,6 +106,10 @@ router.get('/result/:attemptId', requireAuth, (req, res) => {
   if (!isStaff(req.user.role) && req.user.id !== attempt.user_id) {
     return res.status(403).render('error', { code: 403, message: 'Not your result.', user: req.user });
   }
+  const quiz = db.prepare('SELECT id, is_active FROM quizzes WHERE id = ?').get(attempt.quiz_id);
+  const revealAnswers = canRevealAnswers(req.user, quiz && quiz.is_active);
+  const lb = db.prepare('SELECT rank FROM leaderboard WHERE quiz_id = ? AND user_id = ?').get(attempt.quiz_id, attempt.user_id);
+  const total = db.prepare('SELECT COUNT(*) AS c FROM attempts WHERE quiz_id = ? AND disqualified = 0').get(attempt.quiz_id).c;
   const answers = db.prepare(`
     SELECT ans.selected_option, ans.is_correct, ans.marks_obtained,
            q.question_text, q.correct_option, q.marks,
@@ -107,7 +117,10 @@ router.get('/result/:attemptId', requireAuth, (req, res) => {
     FROM answers ans JOIN questions q ON q.id = ans.question_id
     WHERE ans.attempt_id = ? ORDER BY ans.id
   `).all(attempt.id);
-  page(res, 'participant/result', { attempt, answers });
+  page(res, 'participant/result', {
+    attempt, answers, revealAnswers, quizClosed: quiz ? !quiz.is_active : true,
+    rank: lb ? lb.rank : null, totalParticipants: total,
+  });
 });
 
 // GET /leaderboard/:quizId — real-time leaderboard
@@ -121,8 +134,13 @@ router.get('/leaderboard/:quizId', (req, res) => {
 router.get('/profile', requireAuth, (req, res) => {
   const me = db.prepare('SELECT id, name, email, role, created_at FROM users WHERE id = ?').get(req.user.id);
   const attempts = db.prepare(`
-    SELECT a.score, a.time_taken_seconds, a.submitted_at, q.title, q.quiz_code
-    FROM attempts a JOIN quizzes q ON q.id = a.quiz_id
+    SELECT a.id AS attempt_id, a.score, a.time_taken_seconds, a.submitted_at, a.disqualified,
+           q.id AS quiz_id, q.title, q.quiz_code, q.is_active,
+           l.rank AS rank,
+           (SELECT COUNT(*) FROM attempts x WHERE x.quiz_id = q.id AND x.disqualified = 0) AS quiz_total
+    FROM attempts a
+    JOIN quizzes q ON q.id = a.quiz_id
+    LEFT JOIN leaderboard l ON l.quiz_id = q.id AND l.user_id = a.user_id
     WHERE a.user_id = ? ORDER BY a.submitted_at DESC LIMIT 20
   `).all(me.id);
   page(res, 'profile', { me, attempts });

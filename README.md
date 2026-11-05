@@ -73,8 +73,8 @@ Requires **Node.js 18+**.
 # 1. install dependencies
 npm install
 
-# 2. (optional but recommended) seed sample data
-npm run seed        # creates quiz.db + demo users + demo quizzes + attempts
+# 2. (optional) create the database + default admin accounts
+npm run seed        # creates quiz.db + organizer and admin accounts
 
 # 3. start the server
 npm start
@@ -95,25 +95,45 @@ Clicking the button above takes you to Render (free, no credit card required) an
 deploys the `render.yaml` blueprint automatically:
 
 - **Runtime:** Node 20 · **Free plan** · auto-deploy on pushes to `master`
-- **AUTO_SEED=true** — a fresh/empty database is seeded with demo data on boot
+- **AUTO_SEED=true** — a fresh/empty database is seeded with the default admins on boot
 - **JWT_SECRET** auto-generated per deploy
 - **Health check** at `/health`
 
 > ⚠️ Render's free tier has **ephemeral storage**: the SQLite file (`quiz.db`)
-> resets on redeploys. `AUTO_SEED` restores the demo data, so the app is always
-> usable — but for durable data, add Render's **Persistent Disk** (paid) and set
-> `DB_PATH` to it, or switch to a managed DB.
+> resets on redeploys. `AUTO_SEED` restores the admin accounts, so the app is
+> always usable — but for durable data, add Render's **Persistent Disk** (paid)
+> and set `DB_PATH` to it, or switch to a managed DB.
 
 ---
 
-## 🔑 Demo Accounts (after `npm run seed`)
+## ▲ Deploy on Vercel
+
+The repo also ships with `vercel.json` + `api/index.js`, so it deploys as-is:
+
+```bash
+npx vercel --prod
+```
+
+On Vercel, `DB_PATH` defaults to `/tmp/quiz.db` (the only writable location in
+a serverless function) and the default admins are auto-seeded on a cold start.
+
+> ⚠️ Vercel has no persistent disk and no long-lived Socket.io connections:
+> - Data written to `/tmp` is per-instance and can reset on a cold start.
+> - The leaderboard automatically falls back to **5-second polling**; live
+>   socket pushes are disabled. For a long-running event, use Render with a
+>   persistent disk or a managed database.
+
+---
+
+## 🔑 Default Accounts (after `npm run seed`)
 
 | Role | Email | Password |
 |------|-------|----------|
-| **Admin** | `admin@quiz.com` | `admin123` |
-| **Participant** | `zara@example.com` | `player123` |
+| **Organizer** | `admin@quiz.com` | `Mohit@141106` |
+| **Admin** | `admin@uiet.com` | `Uiet@123` |
 
-Demo quiz codes: `TECH26`, `CODE7`, `SCI7X`
+Sign in as one of these accounts and create your first quiz from the admin
+dashboard. Quiz codes are generated automatically for each quiz.
 
 ---
 

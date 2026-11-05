@@ -147,9 +147,14 @@ function renderRows(lb) {
           <td>${fmtTime(r.time_taken_seconds)}</td>
           <td>${timeAgo(r.submitted_at)}</td>
           <td>
-            <button class="btn btn-ghost btn-sm dq-toggle" data-id="${r.attempt_id}" data-dq="${r.disqualified ? 1 : 0}">
-              ${r.disqualified ? 'Reinstate' : 'Disqualify 🚫'}
-            </button>
+            <div class="flex" style="gap:6px;justify-content:flex-end">
+              <button class="btn btn-ghost btn-sm dq-toggle" data-id="${r.attempt_id}" data-dq="${r.disqualified ? 1 : 0}">
+                ${r.disqualified ? 'Reinstate' : 'Disqualify 🚫'}
+              </button>
+              <button class="btn btn-ghost btn-sm remove-attempt" data-id="${r.attempt_id}" data-name="${escapeHtml(r.participant)}">
+                Remove record ↺
+              </button>
+            </div>
           </td>
         </tr>`).join('')
       : `<tr><td colspan="7" class="empty"><div class="big">🤔</div><h3>No results yet</h3><p>Participants haven't submitted yet.</p></div></td></tr>`;
@@ -164,6 +169,45 @@ function renderRows(lb) {
           await refresh();
         } catch (e) { toast(e.message, 'error'); }
       });
+    });
+
+    root.querySelectorAll('.remove-attempt').forEach((el) => {
+      el.addEventListener('click', () => openRemoveAttempt(el.dataset));
+    });
+  }
+
+  // ---- Remove attempt record (give the participant/device another chance) ----
+  const removeModal = document.getElementById('removeAttemptModal');
+  let removeTarget = null;
+
+  function openRemoveAttempt(d) {
+    removeTarget = { id: d.id, name: d.name };
+    const text = document.getElementById('removeAttemptText');
+    if (text) text.innerHTML = `Remove the attempt record of <b>${escapeHtml(d.name)}</b>?`;
+    if (removeModal) removeModal.style.display = 'grid';
+  }
+
+  if (removeModal) {
+    removeModal.addEventListener('click', (e) => {
+      if (e.target === removeModal) removeModal.style.display = 'none';
+    });
+    const confirmBtn = document.getElementById('confirmRemoveAttempt');
+    const errBox = removeModal.querySelector('[data-remove-error]');
+    confirmBtn.addEventListener('click', async () => {
+      if (!removeTarget) return;
+      confirmBtn.disabled = true;
+      try {
+        await api(`/api/admin/attempts/${removeTarget.id}`, { method: 'DELETE' });
+        toast('Attempt record removed — they can retake the quiz now.', 'success');
+        removeModal.style.display = 'none';
+        removeTarget = null;
+        await refresh();
+      } catch (err) {
+        if (errBox) { errBox.textContent = err.message; errBox.classList.add('show'); }
+        toast(err.message, 'error');
+      } finally {
+        confirmBtn.disabled = false;
+      }
     });
   }
 }

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Ultimate Quiz Competition - a real-time online quiz platform for college events, coding competitions, GK quizzes and tech fests.",
   "main": "server.js",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",

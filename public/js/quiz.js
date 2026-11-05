@@ -1,7 +1,7 @@
 /* ============================================================
    quiz.js — live quiz experience.
    Bootstraps via POST /api/attempts/start which validates the
-   quiz, creates a guest session when needed, and blocks repeats.
+   quiz, requires a logged-in account, and blocks repeats.
    ============================================================ */
 (function () {
   const cfg = window.MQUIZ;
@@ -10,6 +10,7 @@
 
   const state = {
     userId: null,
+    deviceId: null,
     quiz: null,
     questions: [],
     answers: {},           // questionId -> 'A'|'B'|'C'|'D'
@@ -30,13 +31,13 @@
   // ---------- Bootstrap ----------
   (async function boot() {
     try {
-      const guestName = cfg.loggedIn ? undefined : (prompt('Enter your name to join (optional):') || 'Guest');
       const data = await api('/api/attempts/start', {
         method: 'POST',
-        body: JSON.stringify({ quizId, guestName }),
+        body: JSON.stringify({ quizId }),
       });
 
       state.userId = data.userId;
+      state.deviceId = data.deviceId || null;
       state.quiz = data.quiz;
       state.questions = data.questions;
       state.durationSec = state.quiz.duration_minutes * 60;
@@ -52,9 +53,10 @@
       startTimer();
       startStopPoll();
     } catch (err) {
-      if (err.status === 409) {
-        if (err.attemptId) return window.location.replace(`/result/${err.attemptId}`);
-        return window.location.reload();
+      // Reopen their own result if they already tried; otherwise show the
+      // reason (e.g. previous attempt from THIS device) instead of looping.
+      if (err.status === 409 && err.attemptId) {
+        return window.location.replace(`/result/${err.attemptId}`);
       }
       if (loadingEl) loadingEl.innerHTML = `
         <div class="empty">
@@ -181,7 +183,7 @@
 
     const answers = Object.entries(state.answers).map(([questionId, selectedOption]) => ({ questionId: +questionId, selectedOption }));
     const timeTaken = state.durationSec - state.remaining;
-    const payload = { quizId, userId: state.userId, answers, timeTaken };
+    const payload = { quizId, userId: state.userId, answers, timeTaken, deviceId: state.deviceId };
 
     try {
       const data = await api('/api/attempts/submit', { method: 'POST', body: JSON.stringify(payload) });

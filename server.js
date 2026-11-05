@@ -7,7 +7,6 @@
 require('dotenv').config();
 const http = require('http');
 const path = require('path');
-const { execSync } = require('child_process');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const { Server } = require('socket.io');
@@ -19,14 +18,15 @@ const { attachUser } = require('./middleware/auth');
 // Ensure DB + tables exist before anything else.
 initDatabase();
 
-// Seed demo data on a fresh/empty database (used by hosts like Render whose
-// free-tier disk is ephemeral and recycled on restart). Set AUTO_SEED=true to
-// enable; non-empty databases are never touched.
-if (process.env.AUTO_SEED === 'true') {
-  const empty = db.prepare('SELECT COUNT(*) AS c FROM users').get().c === 0;
-  if (empty) {
-    console.log('[boot] empty database detected — seeding demo data…');
-    execSync('node seed.js', { stdio: 'inherit' });
+// Seed default admins when the database is empty. Serverless hosts such as
+// Vercel start with a blank /tmp filesystem on every cold start, so this
+// keeps the deployed app usable. Set AUTO_SEED=true on other hosts too.
+const SHOULD_AUTO_SEED = process.env.AUTO_SEED === 'true' || !!process.env.VERCEL;
+if (SHOULD_AUTO_SEED) {
+  const userCount = db.prepare('SELECT COUNT(*) AS c FROM users').get().c;
+  if (userCount === 0) {
+    console.log('[boot] empty database detected — seeding default admins…');
+    require('./seed').seedDatabase();
   }
 }
 
@@ -42,6 +42,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(require('./middleware/device'));
+
+// ---------- Health check (Render / uptime monitors) ----------
+app.get('/health', (req, res) => {
+  res.json({ ok: true, uptime: process.uptime() });
+});
+
+// Vercel serverless functions cannot host a long-lived Socket.io server.
+// Serve a harmless stub so the client detects that `io` is unavailable and
+// automatically falls back to polling the leaderboard API.
+if (process.env.VERCEL) {
+  app.get('/socket.io/socket.io.js', (req, res) => {
+    res.type('application/javascript').send('/* realtime disabled on this deployment; polling fallback is active */');
+  });
+}
 
 // ---------- REST API routes ----------
 app.use('/api', attachUser);
@@ -50,11 +65,6 @@ app.use('/api/quizzes', require('./routes/quizzes'));
 app.use('/api/attempts', require('./routes/attempts'));
 app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/admin', require('./routes/admin'));
-
-// ---------- Health check (for Render / uptime monitors) ----------
-app.get('/health', (req, res) => {
-  res.json({ ok: true, uptime: process.uptime() });
-});
 
 // ---------- Page routes ----------
 app.use('/', require('./routes/pages'));
@@ -94,7 +104,7 @@ io.on('connection', (socket) => {
   });
 
   // Participant submits through the live page (or API).
-  socket.on('submitQuiz', async ({ quizId, userId, answers, timeTaken } = {}) => {
+  socket.on('submitQuiz', async ({ quizId, userId, answers, timeTaken, deviceId } = {}) => {
     if (!quizId || !userId) {
       return socket.emit('error', { message: 'quizId and userId are required.' });
     }
@@ -104,7 +114,7 @@ io.on('connection', (socket) => {
     // transactions + duplicate protection).
     const { submitAttempt } = require('./services/attempt-service');
     try {
-      const result = submitAttempt({ quizId, userId, answers, timeTaken });
+      const result = submitAttempt({ quizId, userId, answers, timeTaken, deviceId });
       // Broadcast live update to everyone in the quiz room.
       socket.to(`quiz-${quizId}`).emit('leaderboardUpdated', {
         quizId,
@@ -124,9 +134,15 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`\n  🎯 M-Quiz is running:`);
-  console.log(`  →  http://localhost:${PORT}`);
-  console.log(`  →  Admin demo login: admin@quiz.com / admin123\n`);
-});
+// Only listen when run directly (`npm start`). Serverless entry points
+// import this module and invoke the exported Express app instead.
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () => {
+    console.log(`\n  🎯 M-Quiz is running:`);
+    console.log(`  →  http://localhost:${PORT}`);
+    console.log(`  →  admin@uiet.com / Uiet@123 \n`);
+  });
+}
+
+module.exports = { app, server, io };

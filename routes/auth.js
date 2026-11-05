@@ -13,7 +13,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // POST /api/auth/signup
 router.post('/signup', (req, res) => {
-  const { name, email, password, role } = req.body || {};
+  const { name, email, password } = req.body || {};
 
   // ---- Form validation ---------------------------------------
   if (!name || !name.trim()) {
@@ -32,10 +32,10 @@ router.post('/signup', (req, res) => {
     return res.status(409).json({ error: 'An account with that email already exists.' });
   }
 
-  // Admin registration is intentionally closed in production; the seed
-  // script provides the demo admin. Guests are handled separately in
-  // the join flow, so new signups default to participant.
-  const finalRole = role === 'admin' ? 'participant' : 'participant';
+  // Admin registration is intentionally closed; the seed script provides
+  // the demo admin. New signups always become regular participants
+  // (there are no guest accounts — every participant logs in).
+  const finalRole = 'participant';
 
   const hash = bcrypt.hashSync(password, 10);
   try {

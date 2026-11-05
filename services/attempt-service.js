@@ -11,9 +11,9 @@ const { refreshLeaderboard } = require('./leaderboard');
  * Validate + score an attempt and persist it inside a transaction.
  * Returns { attemptId, result, leaderboard }.
  *
- * @param {object} params { quizId, userId, answers, timeTaken }
+ * @param {object} params { quizId, userId, answers, timeTaken, deviceId }
  */
-function submitAttempt({ quizId, userId, answers = [], timeTaken = 0 }) {
+function submitAttempt({ quizId, userId, answers = [], timeTaken = 0, deviceId = null }) {
   if (!quizId || !userId) {
     const err = new Error('quizId and userId are required.');
     err.status = 400;
@@ -55,15 +55,31 @@ function submitAttempt({ quizId, userId, answers = [], timeTaken = 0 }) {
   const safeTime = Math.min(Math.max(parseInt(timeTaken, 10) || 0, 0), maxSeconds);
 
   const insertAttempt = db.prepare(
-    'INSERT INTO attempts (user_id, quiz_id, score, time_taken_seconds) VALUES (?, ?, ?, ?)'
+    'INSERT INTO attempts (user_id, quiz_id, device_id, score, time_taken_seconds) VALUES (?, ?, ?, ?, ?)'
   );
   const insertAnswer = db.prepare(
     `INSERT INTO answers (attempt_id, question_id, selected_option, is_correct, marks_obtained)
      VALUES (?, ?, ?, ?, ?)`
   );
 
+  // Route through a helper so the client and the DB agree on the message.
+  const deviceConflict = () => {
+    const err = new Error('This device already participated in this quiz. One device = one attempt.');
+    err.status = 409;
+    err.dup = 'device';
+    return err;
+  };
+
   const submit = db.transaction(() => {
-    const info = insertAttempt.run(userId, quizId, score, safeTime);
+    // Device check runs INSIDE the transaction (holds the write lock), so two
+    // rapid submissions from the same device cannot both slip through.
+    if (deviceId) {
+      const existingDevice = db
+        .prepare('SELECT id FROM attempts WHERE device_id = ? AND quiz_id = ?')
+        .get(deviceId, quizId);
+      if (existingDevice) throw deviceConflict();
+    }
+    const info = insertAttempt.run(userId, quizId, deviceId, score, safeTime);
     const attemptId = info.lastInsertRowid;
     for (const a of answerRows) {
       if (!a) continue;
@@ -76,7 +92,8 @@ function submitAttempt({ quizId, userId, answers = [], timeTaken = 0 }) {
   try {
     attemptId = submit.immediate(); // BEGIN IMMEDIATE → exclusive write lock
   } catch (err) {
-    if (String(err.message).includes('UNIQUE constraint failed: attempts.user_id, attempts.quiz_id')) {
+    if (err.dup === 'device') throw err;
+    if (String(err.message).includes('UNIQUE constraint failed')) {
       const dup = new Error('Duplicate submission blocked — you already submitted this quiz.');
       dup.status = 409;
       throw dup;

@@ -27,4 +27,21 @@
     </div>
   </div>
 
+  <!-- Remove attempt record modal -->
+  <div id="removeAttemptModal" class="overlay" style="display:none">
+    <div class="glass card" style="max-width:420px;width:100%;padding:28px">
+      <div class="flex between">
+        <h3>Remove attempt record</h3>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('removeAttemptModal').style.display='none'">✕</button>
+      </div>
+      <p class="mt-2" id="removeAttemptText">Remove this attempt?</p>
+      <p class="faint" style="font-size:.85rem">This deletes the attempt's score and answers. The participant (and their device) will be allowed to retake this quiz — they get one more chance.</p>
+      <div class="form-error" data-remove-error style="margin:12px 0"></div>
+      <div class="flex" style="justify-content:flex-end;gap:10px;margin-top:18px">
+        <button class="btn btn-ghost" onclick="document.getElementById('removeAttemptModal').style.display='none'">Cancel</button>
+        <button class="btn btn-danger" id="confirmRemoveAttempt">Remove record</button>
+      </div>
+    </div>
+  </div>
+
 <%- include('../partials/footer', { scripts: ['/js/admin.js'] }) %>

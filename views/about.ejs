@@ -1,0 +1,71 @@
+<%- include('partials/header', { title: 'About — M-Quiz' }) %>
+
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <span class="chip"><span class="dot"></span> Built with love</span>
+    <h1>About <span class="grad-text">M-Quiz</span></h1>
+    <p class="sub">
+      The Ultimate Quiz Competition Platform — a real-time arena for hosting quizzes,
+      coding battles, GK challenges and tech fests with instant, live leaderboards.
+    </p>
+  </section>
+
+  <!-- ============ Project story ============ -->
+  <section class="section" style="max-width: 900px; margin: 0 auto;">
+    <div class="card glass">
+      <h2>🎯 What is M-Quiz?</h2>
+      <p class="muted" style="line-height:1.7">
+        M-Quiz is a full-stack quiz competition platform built with
+        <b>Node.js</b>, <b>Express</b>, <b>SQLite</b> and <b>Socket.io</b>. Organizers can
+        create quizzes, generate unique quiz codes, add questions with marks and negative
+        marking, and watch scores stream onto a real-time leaderboard. Participants join
+        with a simple code and compete for the top rank — ranked by points, then by time.
+      </p>
+      <div class="divider"></div>
+      <div class="grid grid-3">
+        <div class="stat-card">
+          <div class="ico" style="background:rgba(124,92,255,.15)">⚡</div>
+          <b>Real-time</b>
+          <span>Live leaderboards via Socket.io</span>
+        </div>
+        <div class="stat-card">
+          <div class="ico" style="background:rgba(255,94,138,.15)">🔗</div>
+          <b>1-click</b>
+          <span>Join instantly with quiz codes</span>
+        </div>
+        <div class="stat-card">
+          <div class="ico" style="background:rgba(45,212,167,.15)">🏆</div>
+          <b>Fair</b>
+          <span>Score + time based ranking</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Creator ============ -->
+  <section class="section" style="max-width: 900px; margin: 0 auto;">
+    <div class="section-head center" style="justify-content:center; text-align:center; flex-direction:column;">
+      <h2>👨‍🎓 Created By</h2>
+      <p>Designed, developed &amp; deployed by a passionate Computer Science student.</p>
+    </div>
+
+    <div class="card glass about-creator">
+      <div class="avatar about-avatar">M</div>
+      <div class="about-creator-body">
+        <h2 class="about-name">Mohit Verma</h2>
+        <div class="flex" style="gap:8px; flex-wrap:wrap;">
+          <span class="tag accent">UIET Kurukshetra University</span>
+          <span class="tag">B.Tech · CSE</span>
+        </div>
+        <div class="divider"></div>
+        <div class="about-meta">
+          <div><span>Course</span><b>B.Tech</b></div>
+          <div><span>Branch</span><b>CSE</b></div>
+          <div><span>Section</span><b>A</b></div>
+          <div><span>Roll No.</span><b>252502040</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<%- include('partials/footer') %>
